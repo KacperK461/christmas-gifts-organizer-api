@@ -1,12 +1,12 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-interface IVariables {
+interface iVariables {
   port: number;
   mongoUrl: string;
 }
 
-const variables: IVariables = {
+const variables: iVariables = {
   port: Number(process.env.PORT) || 5000,
   mongoUrl: process.env.MONGO_URL || '',
 };
