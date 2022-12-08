@@ -1,5 +1,4 @@
 import { Schema, model, InferSchemaType, Model } from 'mongoose';
-import validator from 'validator';
 import bcrypt from 'bcrypt';
 import configVariables from '../config/variables';
 
@@ -7,21 +6,16 @@ const userSchema = new Schema(
   {
     name: {
       type: String,
-      required: [true, 'Name must be provided.'],
+      required: true,
     },
     email: {
       type: String,
-      required: [true, 'Email must be provided.'],
+      required: true,
       unique: true,
-      validate: {
-        validator: validator.isEmail as (str: string) => boolean,
-        message: 'Please provide valid email',
-      },
     },
     password: {
       type: String,
-      required: [true, 'Password must be provided.'],
-      minLength: [8, 'Password must be at least 8 characters long.'],
+      required: true,
     },
   },
   {

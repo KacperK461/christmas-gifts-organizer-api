@@ -9,7 +9,8 @@ import { notFound, catchErrors } from './middleware/errors';
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('API is working...');
+  // res.send('API is working...');
+  res.send({ id: req.body.id });
 });
 
 app.use('/auth', authRouter);

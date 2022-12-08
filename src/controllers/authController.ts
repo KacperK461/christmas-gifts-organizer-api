@@ -1,12 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
+import { RegisterUserInput } from '../schemas/user.schema';
 
-export const register = async (
-  req: Request<{}, {}, { name: string; email: string; password: string }>,
-  res: Response
-) => {
+export const register = async (req: Request<{}, {}, RegisterUserInput['body']>, res: Response) => {
   const { email, name, password } = req.body;
 
-  console.log(email, name, password);
+  res.send({ email, name, password });
 };
 
 export const login = async (req: Request, res: Response) => {};
