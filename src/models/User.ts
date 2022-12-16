@@ -40,7 +40,7 @@ interface IUserMethods {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-export type User = InferSchemaType<typeof userSchema>;
-export type UserModel = Model<User, {}, IUserMethods>;
+export type UserType = InferSchemaType<typeof userSchema>;
+export type UserModel = Model<{ createdAt: Date; updatedAt: Date } & UserType, {}, IUserMethods>;
 
-export default model<User, UserModel>('User', userSchema);
+export default model<UserType, UserModel>('User', userSchema);
