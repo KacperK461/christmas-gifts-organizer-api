@@ -1,4 +1,4 @@
-import { Schema, model, InferSchemaType, Model } from 'mongoose';
+import { Schema, model, InferSchemaType, Model, HydratedDocument } from 'mongoose';
 import bcrypt from 'bcrypt';
 import configVariables from '../config/variables';
 
@@ -40,7 +40,8 @@ interface IUserMethods {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-export type UserType = InferSchemaType<typeof userSchema>;
-export type UserModel = Model<{ createdAt: Date; updatedAt: Date } & UserType, {}, IUserMethods>;
+export type UserType = InferSchemaType<typeof userSchema> & { createdAt: Date; updatedAt: Date };
+export type UserModel = Model<UserType, {}, IUserMethods>;
+export type UserDokument = HydratedDocument<UserType>;
 
 export default model<UserType, UserModel>('User', userSchema);

@@ -11,5 +11,7 @@ export const userSchema = z.object({
 });
 
 export const registerUserSchema = z.object({ body: userSchema });
-
 export type RegisterUserInput = z.infer<typeof registerUserSchema>;
+
+export const loginUserSchema = z.object({ body: userSchema.omit({ name: true }) });
+export type LoginUserInput = z.infer<typeof loginUserSchema>;

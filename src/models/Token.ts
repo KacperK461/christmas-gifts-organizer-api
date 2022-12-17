@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, Types, model } from 'mongoose';
+import { InferSchemaType, Schema, Types, model, HydratedDocument } from 'mongoose';
 
 const TokenSchema = new Schema(
   {
@@ -27,6 +27,7 @@ const TokenSchema = new Schema(
   { timestamps: true }
 );
 
-export type TokenType = InferSchemaType<typeof TokenSchema>;
+export type TokenType = InferSchemaType<typeof TokenSchema> & { createdAt: Date; updatedAt: Date };
+export type TokenDocument = HydratedDocument<TokenType>;
 
 export default model<TokenType>('Token', TokenSchema);

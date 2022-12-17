@@ -20,3 +20,9 @@ export class BadRequestError extends HttpError {
     super(StatusCodes.BAD_REQUEST, message || 'Bad request.');
   }
 }
+
+export class UnauthenticatedError extends HttpError {
+  constructor(message?: string) {
+    super(StatusCodes.UNAUTHORIZED, message || 'Authentication failed.');
+  }
+}

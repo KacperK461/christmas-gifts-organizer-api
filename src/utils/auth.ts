@@ -2,7 +2,7 @@ import { Response, Request } from 'express';
 import { V4 as paseto } from 'paseto';
 import crypto from 'crypto';
 import variables from '../config/variables';
-import Token from '../models/Token';
+import Token, { TokenType } from '../models/Token';
 
 export const createToken = async (payload: object, expireInMilliseconds: number) => {
   return await paseto.sign({ ...payload }, variables.tokenSecret, { expiresIn: `${expireInMilliseconds / 1000}s` });
@@ -31,12 +31,23 @@ export const attachTokenCookies = async (res: Response, userId: string, _refresh
   });
 };
 
+export const generateTokenHash = () => {
+  return crypto.randomBytes(64).toString('hex');
+};
+
 export const createRefreshToken = async (req: Request, userId: string) => {
-  const refreshToken = crypto.randomBytes(64).toString('hex');
+  const refreshToken = generateTokenHash();
   const ip = req.ip;
   const userAgent = req.headers['user-agent'];
 
   await Token.create({ refreshToken, ip, userAgent, user: userId });
 
   return refreshToken;
+};
+
+export const compareTokenInfo = (req: Request, token: TokenType) => {
+  if (!token.isValid) return false;
+  if (req.ip !== token.ip) return false;
+  if (req.headers['user-agent'] !== token.userAgent) return false;
+  return true;
 };
