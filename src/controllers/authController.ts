@@ -45,4 +45,22 @@ export const login = async (req: Request<{}, {}, LoginUserInput['body']>, res: R
   return res.status(StatusCodes.OK).send({ id: user.id, name: user.name, email: user.email });
 };
 
-export const logout = async (req: Request, res: Response) => {};
+export const logout = async (req: Request, res: Response) => {
+  await Token.findOneAndDelete({ user: req.userId });
+
+  res.cookie('accessToken', false, {
+    httpOnly: true,
+    secure: true,
+    signed: true,
+    expires: new Date(Date.now()),
+  });
+
+  res.cookie('refreshToken', false, {
+    httpOnly: true,
+    secure: true,
+    signed: true,
+    expires: new Date(Date.now()),
+  });
+
+  res.status(StatusCodes.OK).send('Logged out');
+};

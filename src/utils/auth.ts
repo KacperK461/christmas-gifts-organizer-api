@@ -4,28 +4,31 @@ import crypto from 'crypto';
 import variables from '../config/variables';
 import Token, { TokenType } from '../models/Token';
 
-export const createToken = async (payload: object, expireInMilliseconds: number) => {
+export type accessTokenPayload = { userId: string };
+export type refreshTokenPayload = { userId: string; refreshToken: string };
+
+export const signToken = async (payload: accessTokenPayload | refreshTokenPayload, expireInMilliseconds: number) => {
   return await paseto.sign({ ...payload }, variables.tokenSecret, { expiresIn: `${expireInMilliseconds / 1000}s` });
 };
 
 export const verifyToken = async (token: string) => {
-  return await paseto.verify(token, variables.tokenSecret);
+  return (await paseto.verify(token, variables.tokenSecret)) as accessTokenPayload | refreshTokenPayload;
 };
 
 export const attachTokenCookies = async (res: Response, userId: string, _refreshToken: string) => {
-  const accessToken = await createToken({ userId }, variables.accessTokenExp);
-  const refreshToken = await createToken({ userId, refreshToken: _refreshToken }, variables.refreshTokenExp);
+  const accessToken = await signToken({ userId }, variables.accessTokenExp);
+  const refreshToken = await signToken({ userId, refreshToken: _refreshToken }, variables.refreshTokenExp);
 
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
-    secure: true,
+    secure: !variables.isDevelopment,
     signed: true,
     expires: new Date(Date.now() + variables.accessTokenExp),
   });
 
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: true,
+    secure: !variables.isDevelopment,
     signed: true,
     expires: new Date(Date.now() + variables.refreshTokenExp),
   });
