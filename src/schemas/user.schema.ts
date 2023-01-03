@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const userSchema = z.object({
+const userSchema = z.object({
   name: z.string().trim().min(3).max(20),
   email: z.string().trim().email(),
   password: z
