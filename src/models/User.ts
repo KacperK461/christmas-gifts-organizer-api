@@ -42,6 +42,6 @@ interface IUserMethods {
 
 export type UserType = InferSchemaType<typeof userSchema> & { createdAt: Date; updatedAt: Date };
 export type UserModel = Model<UserType, {}, IUserMethods>;
-export type UserDokument = HydratedDocument<UserType>;
+export type UserDocument = HydratedDocument<UserType>;
 
 export default model<UserType, UserModel>('User', userSchema);

@@ -4,6 +4,7 @@ import Group from '../models/Group';
 import { createGroupInput, genericGroupIdInput, joinGroupInput } from '../schemas/group.schema';
 import crypto from 'crypto';
 import { BadRequestError } from '../utils/errors';
+import { formatGroup } from '../utils/responseFormat';
 
 export const createGroup = async (req: Request<{}, {}, createGroupInput['body']>, res: Response) => {
   const { name } = req.body;
@@ -13,8 +14,8 @@ export const createGroup = async (req: Request<{}, {}, createGroupInput['body']>
     isAdmin: true,
   };
 
-  await Group.create({ name, accessLink, members: [member] });
-  return res.status(StatusCodes.CREATED).send('Group created');
+  const group = await Group.create({ name, accessLink, members: [member] });
+  return res.status(StatusCodes.CREATED).send(await formatGroup(group));
 };
 
 export const joinGroup = async (req: Request<joinGroupInput['params']>, res: Response) => {
@@ -33,27 +34,21 @@ export const leaveGroup = async (req: Request<genericGroupIdInput['params']>, re
   const { id } = req.params;
   const group = await Group.findByIdAndUpdate(id, { $pull: { members: { user: req.userId } } });
 
-  if (!group) throw new BadRequestError('Group ID is invalid.');
+  if (!group) throw new BadRequestError(`No group with id: ${id}.`);
   return res.status(StatusCodes.OK).send('Left successfully.');
 };
 
 export const getAllGroups = async (req: Request, res: Response) => {
-  const groups = await Group.find({ 'members.user': req.userId })
-    .select('id name members.user')
-    .populate({ path: 'members.user', select: 'id name email' });
+  const groups = await Group.find({ 'members.user': req.userId });
+  const formattedGroups = await Promise.all(groups.map(async (group) => await formatGroup(group)));
 
-  groups.forEach((group) => group.members.map((member) => member.user));
-  return res.status(StatusCodes.OK).send(groups);
+  return res.status(StatusCodes.OK).send(formattedGroups);
 };
 
 export const getGroup = async (req: Request<genericGroupIdInput['params']>, res: Response) => {
   const { id } = req.params;
-  const group = await Group.findById(id)
-    .select('id name members.user')
-    .populate({ path: 'members.user', select: 'id name email' });
+  const group = await Group.findById(id);
 
   if (!group) throw new BadRequestError('Group ID is invalid.');
-
-  group.members.map((member) => member.user);
-  return res.status(StatusCodes.OK).send(group);
+  return res.status(StatusCodes.OK).send(await formatGroup(group));
 };

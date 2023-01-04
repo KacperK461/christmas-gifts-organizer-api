@@ -18,3 +18,6 @@ export type genericGroupAndUserIdInput = z.infer<typeof genericGroupAndUserIdSch
 
 export const joinGroupSchema = z.object({ params: z.object({ link: z.string().uuid() }) });
 export type joinGroupInput = z.infer<typeof joinGroupSchema>;
+
+export const modifyGroupSchema = z.object({ params: z.object({ id: idSchema }), body: groupSchema.partial() });
+export type modifyGroupInput = z.infer<typeof modifyGroupSchema>;

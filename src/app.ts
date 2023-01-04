@@ -5,7 +5,7 @@ import variables from './config/variables';
 const app = express();
 
 import authRouter from './routes/authRoutes';
-import groupRouter from './routes/groupRouter';
+import groupRouter from './routes/groupRoutes';
 
 import { notFound, catchErrors } from './middleware/errors';
 

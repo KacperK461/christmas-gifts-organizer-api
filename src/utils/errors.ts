@@ -26,3 +26,9 @@ export class UnauthenticatedError extends HttpError {
     super(StatusCodes.UNAUTHORIZED, message || 'Authentication failed.');
   }
 }
+
+export class UnauthorizedError extends HttpError {
+  constructor(message?: string) {
+    super(StatusCodes.UNAUTHORIZED, message || 'Unauthorized to access this route.');
+  }
+}
