@@ -6,6 +6,7 @@ const app = express();
 
 import authRouter from './routes/authRoutes';
 import groupRouter from './routes/groupRoutes';
+import eventRouter from './routes/eventRoutes';
 
 import { notFound, catchErrors } from './middleware/errors';
 
@@ -18,6 +19,7 @@ app.get('/ping', (req, res) => {
 
 app.use('/auth', authRouter);
 app.use('/group', groupRouter);
+app.use('/event', eventRouter);
 
 app.use(notFound);
 app.use(catchErrors);

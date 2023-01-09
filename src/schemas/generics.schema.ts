@@ -1,10 +1,13 @@
 import { z } from 'zod';
 import { isValidObjectId } from 'mongoose';
 
-export const idSchema = z.string().refine((val) => isValidObjectId(val));
+export const id = z.string().refine((val) => isValidObjectId(val));
 
-export const genericIdSchema = z.object({ params: z.object({ id: idSchema }) });
-export type genericIdInput = z.infer<typeof genericIdSchema>;
+export const idSchema = z.object({ params: z.object({ id: id }) });
+export type idInput = z.infer<typeof idSchema>;
 
-export const genericIdAndUserIdSchema = z.object({ params: z.object({ id: idSchema, userId: idSchema }) });
-export type genericIdAndUserIdInput = z.infer<typeof genericIdAndUserIdSchema>;
+export const idAndUserIdSchema = z.object({ params: z.object({ id: id, userId: id }) });
+export type idAndUserIdInput = z.infer<typeof idAndUserIdSchema>;
+
+export const groupIdSchema = z.object({ params: z.object({ groupId: id }) });
+export type groupIdInput = z.infer<typeof groupIdSchema>;
