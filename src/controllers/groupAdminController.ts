@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import Group from '../models/Group';
-import { genericGroupAndUserIdInput, genericGroupIdInput, modifyGroupInput } from '../schemas/group.schema';
+import { modifyGroupInput } from '../schemas/group.schema';
+import { genericIdAndUserIdInput, genericIdInput } from '../schemas/generics.schema';
 import { BadRequestError, UnauthorizedError } from '../utils/errors';
 import crypto from 'crypto';
 import { formatGroup } from '../utils/responseFormat';
 
-const getAdminGroup = async (req: Request<genericGroupIdInput['params']>) => {
+const getAdminGroup = async (req: Request<genericIdInput['params']>) => {
   const { id } = req.params;
   const group = await Group.findOne({ id });
   if (!group) throw new BadRequestError(`No group with id: ${id}.`);
@@ -30,12 +31,12 @@ export const modifyGroup = async (
   return res.status(StatusCodes.OK).send(await formatGroup(group));
 };
 
-export const getLink = async (req: Request<genericGroupIdInput['params']>, res: Response) => {
+export const getLink = async (req: Request<genericIdInput['params']>, res: Response) => {
   const group = await getAdminGroup(req);
   return res.status(StatusCodes.OK).send(group.accessLink);
 };
 
-export const changeLink = async (req: Request<genericGroupIdInput['params']>, res: Response) => {
+export const changeLink = async (req: Request<genericIdInput['params']>, res: Response) => {
   const group = await getAdminGroup(req);
   group.accessLink = crypto.randomUUID();
 
@@ -43,7 +44,7 @@ export const changeLink = async (req: Request<genericGroupIdInput['params']>, re
   return res.status(StatusCodes.OK).send(group.accessLink);
 };
 
-export const kickMember = async (req: Request<genericGroupAndUserIdInput['params']>, res: Response) => {
+export const kickMember = async (req: Request<genericIdAndUserIdInput['params']>, res: Response) => {
   const group = await getAdminGroup(req);
   const { userId } = req.params;
 
@@ -55,7 +56,7 @@ export const kickMember = async (req: Request<genericGroupAndUserIdInput['params
   return res.status(StatusCodes.OK).send('User deleted from the group');
 };
 
-export const grantAdmin = async (req: Request<genericGroupAndUserIdInput['params']>, res: Response) => {
+export const grantAdmin = async (req: Request<genericIdAndUserIdInput['params']>, res: Response) => {
   const group = await getAdminGroup(req);
   const { userId } = req.params;
 
@@ -67,7 +68,7 @@ export const grantAdmin = async (req: Request<genericGroupAndUserIdInput['params
   return res.status(StatusCodes.OK).send(`Admin rights granted to user: ${userId}`);
 };
 
-export const revokeAdmin = async (req: Request<genericGroupAndUserIdInput['params']>, res: Response) => {
+export const revokeAdmin = async (req: Request<genericIdAndUserIdInput['params']>, res: Response) => {
   const group = await getAdminGroup(req);
   const { userId } = req.params;
 
@@ -79,7 +80,7 @@ export const revokeAdmin = async (req: Request<genericGroupAndUserIdInput['param
   return res.status(StatusCodes.OK).send(`Admin rights revoked from user: ${userId}`);
 };
 
-export const deleteGroup = async (req: Request<genericGroupAndUserIdInput['params']>, res: Response) => {
+export const deleteGroup = async (req: Request<genericIdAndUserIdInput['params']>, res: Response) => {
   const group = await getAdminGroup(req);
   await group.delete();
   return res.status(StatusCodes.OK).send('Group deleted');

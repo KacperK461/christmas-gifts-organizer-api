@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import Group from '../models/Group';
-import { createGroupInput, genericGroupIdInput, joinGroupInput } from '../schemas/group.schema';
+import { createGroupInput, joinGroupInput } from '../schemas/group.schema';
+import { genericIdInput } from '../schemas/generics.schema';
 import crypto from 'crypto';
 import { BadRequestError } from '../utils/errors';
 import { formatGroup } from '../utils/responseFormat';
@@ -30,7 +31,7 @@ export const joinGroup = async (req: Request<joinGroupInput['params']>, res: Res
   return res.status(StatusCodes.OK).send('Joined successfully.');
 };
 
-export const leaveGroup = async (req: Request<genericGroupIdInput['params']>, res: Response) => {
+export const leaveGroup = async (req: Request<genericIdInput['params']>, res: Response) => {
   const { id } = req.params;
   const group = await Group.findByIdAndUpdate(id, { $pull: { members: { user: req.userId } } });
 
@@ -45,7 +46,7 @@ export const getAllGroups = async (req: Request, res: Response) => {
   return res.status(StatusCodes.OK).send(formattedGroups);
 };
 
-export const getGroup = async (req: Request<genericGroupIdInput['params']>, res: Response) => {
+export const getGroup = async (req: Request<genericIdInput['params']>, res: Response) => {
   const { id } = req.params;
   const group = await Group.findById(id);
 
