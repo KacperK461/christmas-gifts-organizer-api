@@ -9,7 +9,7 @@ import { formatGroup } from '../utils/responseFormat';
 
 const getAdminGroup = async (req: Request<idInput['params']>) => {
   const { id } = req.params;
-  const group = await Group.findOne({ id });
+  const group = await Group.findById(id);
   if (!group) throw new BadRequestError(`No group with id: ${id}.`);
 
   if (!group.members.some((member) => String(member.user) === req.userId && member.isAdmin))
@@ -49,11 +49,11 @@ export const kickMember = async (req: Request<idAndUserIdInput['params']>, res: 
   const { userId } = req.params;
 
   const index = group.members.findIndex((member) => String(member.user) === userId);
-  if (index === -1) throw new BadRequestError(`No user with id: ${userId}`);
+  if (index === -1) throw new BadRequestError(`No user with id: ${userId}.`);
 
   group.members.splice(index, 1);
   await group.save();
-  return res.status(StatusCodes.OK).send('User deleted from the group');
+  return res.status(StatusCodes.OK).send('User deleted from the group.');
 };
 
 export const grantAdmin = async (req: Request<idAndUserIdInput['params']>, res: Response) => {
@@ -61,11 +61,11 @@ export const grantAdmin = async (req: Request<idAndUserIdInput['params']>, res: 
   const { userId } = req.params;
 
   const index = group.members.findIndex((member) => String(member.user) === userId);
-  if (index === -1) throw new BadRequestError(`No user with id: ${userId}`);
+  if (index === -1) throw new BadRequestError(`No user with id: ${userId}.`);
 
   group.members[index].isAdmin = true;
   await group.save();
-  return res.status(StatusCodes.OK).send(`Admin rights granted to user: ${userId}`);
+  return res.status(StatusCodes.OK).send(`Admin rights granted to user: ${userId}.`);
 };
 
 export const revokeAdmin = async (req: Request<idAndUserIdInput['params']>, res: Response) => {
@@ -73,15 +73,15 @@ export const revokeAdmin = async (req: Request<idAndUserIdInput['params']>, res:
   const { userId } = req.params;
 
   const index = group.members.findIndex((member) => String(member.user) === userId);
-  if (index === -1) throw new BadRequestError(`No user with id: ${userId}`);
+  if (index === -1) throw new BadRequestError(`No user with id: ${userId}.`);
 
   group.members[index].isAdmin = false;
   await group.save();
-  return res.status(StatusCodes.OK).send(`Admin rights revoked from user: ${userId}`);
+  return res.status(StatusCodes.OK).send(`Admin rights revoked from user: ${userId}.`);
 };
 
 export const deleteGroup = async (req: Request<idAndUserIdInput['params']>, res: Response) => {
   const group = await getAdminGroup(req);
   await group.delete();
-  return res.status(StatusCodes.OK).send('Group deleted');
+  return res.status(StatusCodes.OK).send('Group deleted.');
 };

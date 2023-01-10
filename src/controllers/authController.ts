@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 import { BadRequestError, UnauthenticatedError } from '../utils/errors';
 import { attachTokenCookies, compareTokenInfo, createRefreshToken, generateTokenHash } from '../utils/auth';
 import Token from '../models/Token';
+import { formatUser } from '../utils/responseFormat';
 
 export const register = async (req: Request<{}, {}, RegisterUserInput['body']>, res: Response) => {
   const { name, email, password } = req.body;
@@ -18,7 +19,7 @@ export const register = async (req: Request<{}, {}, RegisterUserInput['body']>, 
   const refreshToken = await createRefreshToken(req, user.id);
   await attachTokenCookies(res, user.id, refreshToken);
 
-  return res.status(StatusCodes.CREATED).send({ id: user.id, name: user.name, email: user.email });
+  return res.status(StatusCodes.CREATED).send(formatUser(user));
 };
 
 export const login = async (req: Request<{}, {}, LoginUserInput['body']>, res: Response) => {
@@ -42,7 +43,7 @@ export const login = async (req: Request<{}, {}, LoginUserInput['body']>, res: R
     await attachTokenCookies(res, user.id, refreshToken);
   }
 
-  return res.status(StatusCodes.OK).send({ id: user.id, name: user.name, email: user.email });
+  return res.status(StatusCodes.OK).send(formatUser(user));
 };
 
 export const logout = async (req: Request, res: Response) => {
@@ -62,5 +63,5 @@ export const logout = async (req: Request, res: Response) => {
     expires: new Date(Date.now()),
   });
 
-  res.status(StatusCodes.OK).send('Logged out');
+  res.status(StatusCodes.OK).send('Logged out.');
 };

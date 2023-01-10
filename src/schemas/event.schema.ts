@@ -6,10 +6,10 @@ const eventSchema = z.object({
   group: id,
   date: z.preprocess((arg) => {
     if (typeof arg == 'string' || arg instanceof Date) return new Date(arg);
-  }, z.date()),
+  }, z.date().min(new Date())),
 });
 
-export const createEventSchema = z.object({ params: z.object({ groupId: id }), body: eventSchema });
+export const createEventSchema = z.object({ body: eventSchema });
 export type createEventInput = z.infer<typeof createEventSchema>;
 
 export const modifyEventSchema = z.object({

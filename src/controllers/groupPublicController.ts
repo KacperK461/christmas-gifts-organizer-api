@@ -27,7 +27,7 @@ export const joinGroup = async (req: Request<joinGroupInput['params']>, res: Res
   if (group.members.find((member) => member.user == req.userId) !== undefined)
     throw new BadRequestError('User has already joined the group.');
 
-  await group.update({ $push: { members: { user: req.userId } } });
+  await group.updateOne({ $push: { members: { user: req.userId } } });
   return res.status(StatusCodes.OK).send('Joined successfully.');
 };
 
