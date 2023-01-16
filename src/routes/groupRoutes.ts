@@ -15,7 +15,7 @@ import { createGroupSchema, joinGroupSchema, modifyGroupSchema } from '../schema
 import { idSchema, idAndUserIdSchema } from '../schemas/generics.schema';
 
 const router = express.Router();
-router.post('/create', authenticate, validate(createGroupSchema), createGroup);
+router.post('/', authenticate, validate(createGroupSchema), createGroup);
 router.post('/join/:link', authenticate, validate(joinGroupSchema), joinGroup);
 
 router.patch('/:id', authenticate, validate(modifyGroupSchema), modifyGroup);
