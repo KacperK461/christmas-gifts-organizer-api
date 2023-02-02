@@ -74,5 +74,3 @@ export const getEvent = async (req: Request<idInput['params']>, res: Response) =
 
   return res.status(StatusCodes.OK).send(formatEvent(event));
 };
-
-//TODO: pelet

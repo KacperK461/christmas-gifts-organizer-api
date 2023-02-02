@@ -5,22 +5,22 @@ const wishlistSchema = new Schema(
     event: {
       type: Types.ObjectId,
       ref: 'Event',
-      require: true,
+      required: true,
     },
     user: {
       type: Types.ObjectId,
       ref: 'User',
-      require: true,
+      required: true,
     },
     products: [
       {
         name: {
           type: String,
-          require: true,
+          required: true,
         },
         price: {
           type: Number,
-          require: true,
+          required: true,
           set: (v: number) => v * 100,
           get: (v: number) => (v / 100).toFixed(2),
         },
@@ -33,11 +33,11 @@ const wishlistSchema = new Schema(
             user: {
               type: Types.ObjectId,
               ref: 'User',
-              require: true,
+              required: true,
             },
             amount: {
               type: Number,
-              require: true,
+              required: true,
               set: (v: number) => v * 100,
               get: (v: number) => (v / 100).toFixed(2),
             },
@@ -51,7 +51,9 @@ const wishlistSchema = new Schema(
   }
 );
 
-export type wishlistType = InferSchemaType<typeof wishlistSchema> & { createdAt: Date; updatedAt: Date };
-export type wishlistDocument = HydratedDocument<wishlistType>;
+export type wishlistType = InferSchemaType<typeof wishlistSchema>;
+export type wishlistDocument = HydratedDocument<Omit<wishlistType, 'products'>> & {
+  products: Array<{ id?: any; _id?: Types.ObjectId } & wishlistType['products'][0]>;
+};
 
 export default model<wishlistType>('Wishlist', wishlistSchema);

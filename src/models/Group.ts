@@ -4,7 +4,7 @@ const GroupSchema = new Schema(
   {
     name: {
       type: String,
-      require: true,
+      required: true,
     },
     accessLink: {
       type: String,
@@ -27,7 +27,7 @@ const GroupSchema = new Schema(
   { timestamps: true }
 );
 
-export type GroupType = InferSchemaType<typeof GroupSchema> & { createdAt: Date; updatedAt: Date };
+export type GroupType = InferSchemaType<typeof GroupSchema>;
 export type GroupDocument = HydratedDocument<GroupType>;
 
 export default model<GroupType>('Group', GroupSchema);

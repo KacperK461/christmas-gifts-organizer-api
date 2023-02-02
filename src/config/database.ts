@@ -4,4 +4,6 @@ const connectDB = (url: string) => {
   return mongoose.connect(url);
 };
 
+mongoose.set('strictQuery', true);
+
 export default connectDB;

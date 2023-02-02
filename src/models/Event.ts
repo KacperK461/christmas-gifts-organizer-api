@@ -4,22 +4,22 @@ const EventSchema = new Schema(
   {
     name: {
       type: String,
-      require: true,
+      required: true,
     },
     group: {
       type: Types.ObjectId,
       ref: 'Group',
-      require: true,
+      required: true,
     },
     date: {
       type: Date,
-      require: true,
+      required: true,
     },
   },
   { timestamps: true }
 );
 
-export type EventType = InferSchemaType<typeof EventSchema> & { createdAt: Date; updatedAt: Date };
+export type EventType = InferSchemaType<typeof EventSchema>;
 export type EventDocument = HydratedDocument<EventType>;
 
 export default model<EventType>('Event', EventSchema);

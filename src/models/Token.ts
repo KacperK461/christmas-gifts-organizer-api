@@ -27,7 +27,7 @@ const TokenSchema = new Schema(
   { timestamps: true }
 );
 
-export type TokenType = InferSchemaType<typeof TokenSchema> & { createdAt: Date; updatedAt: Date };
+export type TokenType = InferSchemaType<typeof TokenSchema>;
 export type TokenDocument = HydratedDocument<TokenType>;
 
 export default model<TokenType>('Token', TokenSchema);

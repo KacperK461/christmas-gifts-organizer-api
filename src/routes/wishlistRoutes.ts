@@ -21,11 +21,10 @@ import {
   modifyContributionSchema,
   modifyProductsSchema,
 } from '../schemas/product.schema';
-import { createWishlistSchema } from '../schemas/wishlist.schema';
 
 const router = express.Router();
 
-router.post('/', authenticate, validate(createWishlistSchema)), createWishlist;
+router.post('/:eventId', authenticate, validate(eventIdSchema), createWishlist);
 router.post('/product/:eventId', authenticate, validate(createProductsSchema), createProduct);
 router.post('/contribution/:productId/:eventId', authenticate, validate(createContributionSchema), createContribution);
 

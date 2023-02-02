@@ -40,7 +40,7 @@ interface IUserMethods {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-export type UserType = InferSchemaType<typeof userSchema> & { createdAt: Date; updatedAt: Date };
+export type UserType = InferSchemaType<typeof userSchema>;
 export type UserModel = Model<UserType, {}, IUserMethods>;
 export type UserDocument = HydratedDocument<UserType>;
 

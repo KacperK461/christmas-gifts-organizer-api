@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { id } from './generics.schema';
 
 const wishlistSchema = z.object({
-  user: id,
+  // user: id,
   event: id,
 });
 
