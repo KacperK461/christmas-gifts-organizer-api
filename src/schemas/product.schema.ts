@@ -16,7 +16,12 @@ export const modifyProductsSchema = z.object({
 export type modifyProductInput = z.infer<typeof modifyProductsSchema>;
 
 const contributionSchema = z.object({
-  amount: z.number().refine((val) => (val * 100) % 1 === 0),
+  amount: z.number().refine((val) => {
+    const decimalDigits = val.toString().split('.')[1];
+    if (!decimalDigits) return true;
+    if (decimalDigits.length < 3) return true;
+    return false;
+  }),
 });
 
 export const createContributionSchema = z.object({

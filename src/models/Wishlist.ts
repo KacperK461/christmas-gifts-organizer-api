@@ -21,8 +21,8 @@ const wishlistSchema = new Schema(
         price: {
           type: Number,
           required: true,
-          set: (v: number) => v * 100,
-          get: (v: number) => (v / 100).toFixed(2),
+          set: (v: number) => Math.round(v * 100),
+          get: (v: number) => v / 100,
         },
         isClosed: {
           type: Boolean,
@@ -38,21 +38,20 @@ const wishlistSchema = new Schema(
             amount: {
               type: Number,
               required: true,
-              set: (v: number) => v * 100,
-              get: (v: number) => (v / 100).toFixed(2),
+              set: (v: number) => Math.round(v * 100),
+              get: (v: number) => v / 100,
             },
           },
         ],
       },
     ],
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 export type wishlistType = InferSchemaType<typeof wishlistSchema>;
-export type wishlistDocument = HydratedDocument<Omit<wishlistType, 'products'>> & {
+export type wishlistDocument = HydratedDocument<wishlistType>;
+export type wishlistDocumentWithIds = HydratedDocument<Omit<wishlistType, 'products'>> & {
   products: Array<{ id?: any; _id?: Types.ObjectId } & wishlistType['products'][0]>;
 };
 

@@ -1,7 +1,7 @@
 import { EventDocument } from '../models/Event';
 import { GroupDocument } from '../models/Group';
 import { UserDocument } from '../models/User';
-import { wishlistDocument } from '../models/Wishlist';
+import { wishlistDocumentWithIds } from '../models/Wishlist';
 
 export const formatUser = (user: UserDocument) => {
   return {
@@ -39,7 +39,7 @@ export const formatEvent = (event: EventDocument) => {
   };
 };
 
-export const formatUserWishlist = (wishlist: wishlistDocument) => {
+export const formatUserWishlist = (wishlist: wishlistDocumentWithIds) => {
   return {
     id: wishlist.id,
     event: wishlist.event,
@@ -49,6 +49,28 @@ export const formatUserWishlist = (wishlist: wishlistDocument) => {
         id: product.id,
         name: product.name,
         price: product.price,
+      };
+    }),
+  };
+};
+
+export const formatWishlist = (wishlist: wishlistDocumentWithIds) => {
+  return {
+    id: wishlist.id,
+    event: wishlist.event,
+    user: wishlist.user,
+    products: wishlist.products.map((product) => {
+      return {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        fulfilled: product.isClosed,
+        contributions: product.contributions.map((contribution) => {
+          return {
+            user: contribution.user,
+            amount: contribution.amount,
+          };
+        }),
       };
     }),
   };
