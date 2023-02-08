@@ -34,12 +34,17 @@ const wishlistSchema = new Schema(
               type: Types.ObjectId,
               ref: 'User',
               required: true,
+              unique: true,
             },
             amount: {
               type: Number,
               required: true,
               set: (v: number) => Math.round(v * 100),
               get: (v: number) => v / 100,
+            },
+            outdated: {
+              type: Boolean,
+              default: false,
             },
           },
         ],

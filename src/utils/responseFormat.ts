@@ -69,6 +69,7 @@ export const formatWishlist = (wishlist: wishlistDocumentWithIds) => {
           return {
             user: contribution.user,
             amount: contribution.amount,
+            outdated: contribution.outdated,
           };
         }),
       };
