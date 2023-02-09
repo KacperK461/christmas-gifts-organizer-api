@@ -3,16 +3,22 @@ import { StatusCodes } from 'http-status-codes';
 import Event from '../models/Event';
 import { GroupType } from '../models/Group';
 import Wishlist, { wishlistDocumentWithIds } from '../models/Wishlist';
-import { eventIdInput } from '../schemas/generics.schema';
-import {
-  createContributionInput,
-  createProductInput,
-  modifyContributionInput,
-  modifyProductInput,
-} from '../schemas/product.schema';
 import { BadRequestError, UnauthorizedError } from '../utils/errors';
 import { formatUserWishlist, formatWishlist } from '../utils/responseFormat';
 import { fixPrices } from '../utils/helpers';
+import {
+  createWishlistInput,
+  createProductInput,
+  createContributionInput,
+  modifyProductInput,
+  modifyContributionInput,
+  getWishlistInput,
+  getUserWishlistInput,
+  getAllWishlistsInput,
+  deleteWishlistInput,
+  deleteProductInput,
+  deleteContributionInput,
+} from '../schemas/wishlist.schema';
 
 const validateEvent = async (eventId: string, userId: string | undefined) => {
   const event = await Event.findById(eventId).populate<{ group: GroupType }>('group');
@@ -22,7 +28,7 @@ const validateEvent = async (eventId: string, userId: string | undefined) => {
     throw new UnauthorizedError('No rights to access this event.');
 };
 
-export const createWishlist = async (req: Request<eventIdInput['params']>, res: Response) => {
+export const createWishlist = async (req: Request<createWishlistInput['params']>, res: Response) => {
   const { eventId } = req.params;
   await validateEvent(eventId, req.userId);
 
@@ -37,17 +43,16 @@ export const createProduct = async (
   req: Request<createProductInput['params'], {}, createProductInput['body']>,
   res: Response
 ) => {
-  const { eventId } = req.params;
+  const { wishlistId } = req.params;
   const { name, price } = req.body;
 
-  const wishlist = await Wishlist.findOne({ event: eventId, user: req.userId });
-  if (!wishlist) throw new BadRequestError(`No wishlist connected to event: ${eventId}`);
-
-  const updatedWishlist = await Wishlist.findByIdAndUpdate(
-    wishlist.id,
+  const updatedWishlist = await Wishlist.findOneAndUpdate(
+    { _id: wishlistId, user: req.userId },
     { $push: { products: { name, price } } },
     { returnDocument: 'after' }
   );
+
+  if (!updatedWishlist) throw new BadRequestError(`No wishlist with id: ${wishlistId} connected to the user.`);
 
   return res.status(StatusCodes.CREATED).send(formatUserWishlist(updatedWishlist as wishlistDocumentWithIds));
 };
@@ -56,18 +61,22 @@ export const createContribution = async (
   req: Request<createContributionInput['params'], {}, createContributionInput['body']>,
   res: Response
 ) => {
-  const { eventId, productId } = req.params;
+  const { wishlistId, productId } = req.params;
   const { amount } = req.body;
-  await validateEvent(eventId, req.userId);
 
   const wishlist = (await Wishlist.findOne({
-    event: eventId,
+    _id: wishlistId,
     user: { $ne: req.userId },
-    'products._id': productId,
   })) as wishlistDocumentWithIds;
 
-  if (!wishlist) throw new BadRequestError(`No product with id: ${productId}`);
-  const product = wishlist.products.find((product) => product.id === productId)!;
+  if (!wishlist) throw new BadRequestError(`No wishlist with id: ${wishlistId}.`);
+
+  const event = (await Event.findById(wishlist.event).populate<{ group: GroupType }>('group'))!;
+  if (!event.group.members.some((member) => String(member.user) === req.userId))
+    throw new UnauthorizedError('No rights to access this wishlist.');
+
+  const product = wishlist.products.find((product) => product.id === productId);
+  if (!product) throw new BadRequestError(`No product with id: ${productId}`);
 
   if (product.contributions.some((contribution) => String(contribution.user) === req.userId))
     throw new BadRequestError('Contribution already exists.');
@@ -97,14 +106,14 @@ export const modifyProduct = async (
   req: Request<modifyProductInput['params'], {}, modifyProductInput['body']>,
   res: Response
 ) => {
-  const { eventId, productId } = req.params;
+  const { wishlistId, productId } = req.params;
   const { name, price } = req.body;
 
-  const wishlist = (await Wishlist.findOne({ event: eventId, user: req.userId })) as wishlistDocumentWithIds;
-  if (!wishlist) throw new BadRequestError(`No wishlist connected to event: ${eventId}`);
+  const wishlist = (await Wishlist.findOne({ _id: wishlistId, user: req.userId })) as wishlistDocumentWithIds;
+  if (!wishlist) throw new BadRequestError(`No wishlist with id: ${wishlistId} connected to the user.`);
 
   const productIndex = wishlist.products.findIndex((product) => product.id === productId);
-  if (productIndex === -1) throw new BadRequestError(`No product with id: ${productId}`);
+  if (productIndex === -1) throw new BadRequestError(`No product with id: ${productId}.`);
 
   if (name) wishlist.products[productIndex].name = name;
   if (price) {
@@ -121,21 +130,21 @@ export const modifyContribution = async (
   req: Request<modifyContributionInput['params'], {}, modifyContributionInput['body']>,
   res: Response
 ) => {
-  const { eventId, productId } = req.params;
+  const { wishlistId, productId } = req.params;
   const { amount } = req.body;
-  await validateEvent(eventId, req.userId);
 
-  const wishlist = (await Wishlist.findOne({
-    event: eventId,
-    user: { $ne: req.userId },
-    'products._id': productId,
-  })) as wishlistDocumentWithIds;
+  const wishlist = (await Wishlist.findOne({ _id: wishlistId, user: { $ne: req.userId } })) as wishlistDocumentWithIds;
+  if (!wishlist) throw new BadRequestError(`No wishlist with id: ${wishlistId}.`);
 
-  if (!wishlist) throw new BadRequestError(`No product with id: ${productId}`);
-  const product = wishlist.products.find((product) => product.id === productId)!;
+  const event = (await Event.findById(wishlist.event).populate<{ group: GroupType }>('group'))!;
+  if (!event.group.members.some((member) => String(member.user) === req.userId))
+    throw new UnauthorizedError('No rights to access this wishlist.');
+
+  const product = wishlist.products.find((product) => product.id === productId);
+  if (!product) throw new BadRequestError(`No product with id: ${productId}`);
 
   if (!product.contributions.some((contribution) => String(contribution.user) === req.userId))
-    throw new BadRequestError(`No contribution connected to product: ${productId}.`);
+    throw new BadRequestError(`No contribution exists for product wit id: ${productId}.`);
 
   const currentContributionAmount = product.contributions.reduce(
     (sum, contribution) =>
@@ -165,15 +174,49 @@ export const modifyContribution = async (
 
   return res.status(StatusCodes.CREATED).send(formatWishlist(updatedWishlist as wishlistDocumentWithIds));
 };
+//TODO: test
+export const getWishlist = async (req: Request<getWishlistInput['params']>, res: Response) => {
+  const { wishlistId } = req.params;
+  const wishlist = await Wishlist.findOne({ _id: wishlistId, user: { $ne: req.userId } });
 
-export const getWishlist = async (req: Request, res: Response) => {};
+  if (!wishlist) throw new BadRequestError(`No wishlist with id: ${wishlistId}.`);
 
-export const getUserWishlist = async (req: Request, res: Response) => {};
+  const event = (await Event.findById(wishlist.event).populate<{ group: GroupType }>('group'))!;
+  if (!event.group.members.some((member) => String(member.user) === req.userId))
+    throw new UnauthorizedError('No rights to access this wishlist.');
 
-export const getAllWishlists = async (req: Request, res: Response) => {};
+  return res.status(StatusCodes.OK).send(formatWishlist(wishlist as wishlistDocumentWithIds));
+};
 
-export const deleteWishlist = async (req: Request, res: Response) => {};
+export const getUserWishlist = async (req: Request<getUserWishlistInput['params']>, res: Response) => {
+  const { eventId } = req.params;
 
-export const deleteProduct = async (req: Request, res: Response) => {};
+  const wishlist = await Wishlist.findOne({ event: eventId, user: req.userId });
+  if (!wishlist) throw new BadRequestError(`No wishlist connected to event: ${eventId}.`);
 
-export const deleteContribution = async (req: Request, res: Response) => {};
+  return res.status(StatusCodes.CREATED).send(formatUserWishlist(wishlist as wishlistDocumentWithIds));
+};
+
+export const getAllWishlists = async (req: Request<getAllWishlistsInput['params']>, res: Response) => {
+  const { eventId } = req.params;
+  validateEvent(eventId, req.userId);
+
+  const wishlists = await Wishlist.find({ event: eventId });
+  const formattedWishlists = wishlists.map((wishlist) => formatWishlist(wishlist as wishlistDocumentWithIds));
+
+  return res.status(StatusCodes.CREATED).send(formattedWishlists);
+};
+
+export const deleteWishlist = async (req: Request<deleteWishlistInput['params']>, res: Response) => {
+  const { wishlistId } = req.params;
+  const deletedWishlist = await Wishlist.findOneAndDelete({ _id: wishlistId, user: req.userId });
+
+  if (!deletedWishlist) throw new BadRequestError(`No wishlist with id: ${wishlistId} connected to the user.`);
+  return res.status(StatusCodes.OK).send('Wishlist deleted.');
+};
+
+export const deleteProduct = async (req: Request<deleteProductInput['params']>, res: Response) => {
+  const { wishlistId, productId } = req.params;
+};
+
+export const deleteContribution = async (req: Request<deleteContributionInput['params']>, res: Response) => {};

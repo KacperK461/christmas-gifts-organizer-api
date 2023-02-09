@@ -14,29 +14,50 @@ import {
 } from '../controllers/wishlistController';
 import { authenticate } from '../middleware/authenticate';
 import { validate } from '../middleware/validate';
-import { eventAndProductIdSchema, eventIdSchema, idSchema, userIdSchema } from '../schemas/generics.schema';
 import {
+  createWishlistSchema,
+  createProductSchema,
   createContributionSchema,
-  createProductsSchema,
+  modifyProductSchema,
   modifyContributionSchema,
-  modifyProductsSchema,
-} from '../schemas/product.schema';
+  getWishlistSchema,
+  getUserWishlistSchema,
+  getAllWishlistsSchema,
+  deleteWishlistSchema,
+  deleteProductSchema,
+  deleteContributionSchema,
+} from '../schemas/wishlist.schema';
 
 const router = express.Router();
 
-router.post('/:eventId', authenticate, validate(eventIdSchema), createWishlist);
-router.post('/product/:eventId', authenticate, validate(createProductsSchema), createProduct);
-router.post('/contribution/:productId/:eventId', authenticate, validate(createContributionSchema), createContribution);
+router.post('/event/:eventId', authenticate, validate(createWishlistSchema), createWishlist);
+router.post('/:wishlistId/product', authenticate, validate(createProductSchema), createProduct);
+router.post(
+  '/:wishlistId/product/:productId/contribution',
+  authenticate,
+  validate(createContributionSchema),
+  createContribution
+);
 
-router.patch('/product/:productId/:eventId', authenticate, validate(modifyProductsSchema), modifyProduct);
-router.patch('/contribution/:productId/:eventId', authenticate, validate(modifyContributionSchema), modifyContribution);
+router.patch('/:wishlistId/product/:productId', authenticate, validate(modifyProductSchema), modifyProduct);
+router.patch(
+  '/:wishlistId/product/:productId/contribution',
+  authenticate,
+  validate(modifyContributionSchema),
+  modifyContribution
+);
 
-router.get('/:id', authenticate, validate(idSchema), getWishlist);
-router.get('/my/:eventId', authenticate, validate(eventIdSchema), getUserWishlist);
-router.get('/all/:eventId', authenticate, validate(eventIdSchema), getAllWishlists);
+router.get('/:wishlistId', authenticate, validate(getWishlistSchema), getWishlist);
+router.get('/my/event/:eventId', authenticate, validate(getUserWishlistSchema), getUserWishlist);
+router.get('/all/event/:eventId', authenticate, validate(getAllWishlistsSchema), getAllWishlists);
 
-router.delete('/:id', authenticate, validate(idSchema), deleteWishlist);
-router.delete('/product/:productId/:eventId', validate(eventAndProductIdSchema), deleteProduct);
-router.delete('/contribution/:productId/:eventId', authenticate, validate(eventAndProductIdSchema), deleteContribution);
+router.delete('/:wishlistId', authenticate, validate(deleteWishlistSchema), deleteWishlist);
+router.delete('/:wishlistId/product/:productId', validate(deleteProductSchema), deleteProduct);
+router.delete(
+  '/:wishlistId/product/:productId/contribution',
+  authenticate,
+  validate(deleteContributionSchema),
+  deleteContribution
+);
 
 export default router;
